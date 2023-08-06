@@ -569,7 +569,14 @@ class SQLModel(BaseModel, metaclass=SQLModelMetaclass, registry=default_registry
         validated = super().model_validate(
             obj, strict=strict, from_attributes=from_attributes, context=context
         )
-        return cls(**{key: value for key, value in validated.model_dump(exclude_unset=True, exclude_defaults=True).items()})
+        return cls(
+            **{
+                key: value
+                for key, value in validated.model_dump(
+                    exclude_unset=True, exclude_defaults=True
+                ).items()
+            }
+        )
 
 
 def _is_field_noneable(field: FieldInfo) -> bool:

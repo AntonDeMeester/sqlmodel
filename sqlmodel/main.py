@@ -52,9 +52,9 @@ from .sql.sqltypes import GUID, AutoString
 from .typing import SQLModelConfig
 
 if sys.version_info >= (3, 8):
-    from typing import get_args, get_origin
+    from typing import get_args, get_origin, Literal
 else:
-    from typing_extensions import get_args, get_origin
+    from typing_extensions import get_args, get_origin, Literal
 
 from typing_extensions import Annotated, _AnnotatedAlias
 
@@ -477,6 +477,13 @@ def get_sqlalchemy_type(field: FieldInfo) -> Any:
         type_ = type2
     elif org_type is pydantic.AnyUrl and type(type_) is _AnnotatedAlias:
         return AutoString(type_.__metadata__[0].max_length)
+    elif org_type is Literal:
+        child_types = list({type(x) for x in get_args(type_)})
+        if len(child_types) != 1:
+            raise RuntimeError(
+                "Cannot have a Literal with multiple types as a SQLAlchemy field"
+            )
+        type_ = child_types[0]
 
     # The 3rd is PydanticGeneralMetadata
     metadata = _get_field_metadata(field)

@@ -477,7 +477,9 @@ def get_sqlalchemy_type(field: FieldInfo) -> Any:
         type_ = type2
     elif org_type is pydantic.AnyUrl and type(type_) is _AnnotatedAlias:
         return AutoString(type_.__metadata__[0].max_length)
-    elif org_type is Literal:
+
+    # Resolve Literal fields
+    if get_origin(type_) is Literal:
         child_types = list({type(x) for x in get_args(type_)})
         if len(child_types) != 1:
             raise RuntimeError(

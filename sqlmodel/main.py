@@ -384,10 +384,12 @@ class SQLModelMetaclass(ModelMetaclass, DeclarativeMeta):
         # triggers an error
         base_is_table = False
         for base in bases:
-            config = getattr(base, "model_config")
-            if config and getattr(config, "table", False):
-                base_is_table = True
-                break
+            # NOTE: SQLAlchemy mixins like AwaitableAttrs will not have a model_config
+            if hasattr(base, "model_config"):
+                config = getattr(base, "model_config")
+                if config and getattr(config, "table", False):
+                    base_is_table = True
+                    break
         if cls.model_config.get("table", False) and not base_is_table:
             dict_used = dict_.copy()
             for field_name, field_value in cls.model_fields.items():
